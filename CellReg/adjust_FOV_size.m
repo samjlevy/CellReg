@@ -31,7 +31,7 @@ end
 
 % Correcting the footprints and centroids according to the adjustments:
 adjusted_spatial_footprints=cell(1,number_of_sessions);
-adjusted_FOV_all_sessions=zeros(adjusted_y_size,adjusted_x_size,number_of_sessions);
+adjusted_FOV_all_sessions=false(adjusted_y_size,adjusted_x_size,number_of_sessions); %sss
 adjustment_zero_padding=zeros(2,number_of_sessions);
 for n=1:number_of_sessions   
     adjusted_FOV_temp=FOV_all_sessions{n};    
@@ -40,16 +40,18 @@ for n=1:number_of_sessions
     adjusted_FOV_all_sessions(:,:,n)=new_adjusted_FOV;
     spatial_footprints_temp=spatial_footprints{n};
     number_of_cells=size(spatial_footprints_temp,1);
-    adjusted_spatial_footprints_temp=zeros(number_of_cells,adjusted_y_size,adjusted_x_size);
+    adjusted_spatial_footprints_temp=false(number_of_cells,adjusted_y_size,adjusted_x_size); %sss
     for k=1:number_of_cells
         unadjusted_spatial_footprint=squeeze(spatial_footprints_temp(k,:,:));
-        adjusted_unadjusted_spatial_footprint=zeros(adjusted_y_size,adjusted_x_size);
+        adjusted_unadjusted_spatial_footprint=false(adjusted_y_size,adjusted_x_size); %sss
         adjusted_unadjusted_spatial_footprint(1:size(unadjusted_spatial_footprint,1),1:size(unadjusted_spatial_footprint,2))=unadjusted_spatial_footprint;
         adjusted_spatial_footprints_temp(k,:,:)=adjusted_unadjusted_spatial_footprint;
     end
-    adjusted_spatial_footprints{n}=adjusted_spatial_footprints_temp;
+    adjusted_spatial_footprints{n}=logical(adjusted_spatial_footprints_temp); %sss
     adjustment_zero_padding(1,n)=adjusted_x_size-size(unadjusted_spatial_footprint,2);
     adjustment_zero_padding(2,n)=adjusted_y_size-size(unadjusted_spatial_footprint,1);
+    
+    spatial_footprints{n} = []; %sss
 end
 
 end

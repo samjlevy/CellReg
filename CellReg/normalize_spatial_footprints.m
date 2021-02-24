@@ -18,7 +18,10 @@ display_progress_bar('Terminating previous progress bars',true)
 for n=1:number_of_sessions
     display_progress_bar(['Normalizing spatial footprints for session #' num2str(n) ' - '],false)    
     this_session_spatial_footprints=spatial_footprints{n};
-    normalized_spatial_footprints{n}=zeros(size(this_session_spatial_footprints));
+    
+    spatial_footprints{n} = []; % sss
+    
+    normalized_spatial_footprints{n}=false(size(this_session_spatial_footprints)); %sss
     number_of_cells=size(this_session_spatial_footprints,1);
     for k=1:number_of_cells
         display_progress_bar(100*(k)/(number_of_cells),false)

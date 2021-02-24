@@ -18,7 +18,7 @@ for n=1:number_of_sessions
     display_progress_bar(['Calculating footprints projections for session #' num2str(n) ' - '],false)
     this_session_spatial_footprints=spatial_footprints{n};
     num_spatial_footprints=size(this_session_spatial_footprints,1);
-    normalized_spatial_footprints=zeros(size(this_session_spatial_footprints));
+    normalized_spatial_footprints=false(size(this_session_spatial_footprints)); %sss
     for k=1:num_spatial_footprints
         display_progress_bar(100*(k)/(num_spatial_footprints),false)
         temp_spatial_footprint=this_session_spatial_footprints(k,:,:)/max(max(this_session_spatial_footprints(k,:,:)));
@@ -27,6 +27,8 @@ for n=1:number_of_sessions
     end
     footprints_projections{n}=squeeze(sum(normalized_spatial_footprints,1));
     display_progress_bar(' done',false);
+    
+    spatial_footprints{n} = []; %sss
 end
 
 end

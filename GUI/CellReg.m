@@ -629,8 +629,10 @@ function transform_sessions_Callback(hObject,~, handles)
 use_parallel_processing=true; % either true or false
 
 data_struct=handles.data_struct;
+handles.data_struct.spatial_footprints = []; %sss
 number_of_sessions=data_struct.number_of_sessions;
 spatial_footprints=data_struct.spatial_footprints;
+data_struct.spatial_footprints = []; %sss
 results_directory=data_struct.results_directory;
 figures_directory=data_struct.figures_directory;
 microns_per_pixel=data_struct.microns_per_pixel;
@@ -639,6 +641,7 @@ microns_per_pixel=data_struct.microns_per_pixel;
 aligned_data_struct=struct;
 aligned_data_struct.number_of_sessions=number_of_sessions;
 aligned_data_struct.spatial_footprints=spatial_footprints;
+clear spatial_footprints %sss
 aligned_data_struct.results_directory=results_directory;
 aligned_data_struct.figures_directory=figures_directory;
 aligned_data_struct.microns_per_pixel=microns_per_pixel;
@@ -692,9 +695,11 @@ end
 
 % Preparing the data for alignment:
 disp('Stage 2 - Aligning sessions')
-[normalized_spatial_footprints]=normalize_spatial_footprints(spatial_footprints);
+%[normalized_spatial_footprints]=normalize_spatial_footprints(spatial_footprints);
+[normalized_spatial_footprints]=normalize_spatial_footprints(aligned_data_struct.spatial_footprints);
 [adjusted_spatial_footprints,adjusted_FOV,adjusted_x_size,adjusted_y_size,adjustment_zero_padding]=...
     adjust_FOV_size(normalized_spatial_footprints);
+clear normalized_spatial_footprints
 [adjusted_footprints_projections]=compute_footprints_projections(adjusted_spatial_footprints);
 [centroid_locations]=compute_centroid_locations(adjusted_spatial_footprints,microns_per_pixel);
 [centroid_projections]=compute_centroids_projections(centroid_locations,adjusted_spatial_footprints);
@@ -704,7 +709,7 @@ sufficient_correlation_centroids=0.2; % smaller correlation imply no similarity 
 sufficient_correlation_footprints=0.2; % smaller correlation imply no similarity between sessions
 if strcmp(alignment_type,'Translations and Rotations')
     [spatial_footprints_corrected,centroid_locations_corrected,footprints_projections_corrected,centroid_projections_corrected,maximal_cross_correlation,alignment_translations,overlapping_FOV]=...
-        align_images(adjusted_spatial_footprints,centroid_locations,adjusted_footprints_projections,centroid_projections,adjusted_FOV,microns_per_pixel,reference_session_index,alignment_type,sufficient_correlation_centroids,sufficient_correlation_footprints,use_parallel_processing,maximal_rotation);
+        align_images(adjusted_spatial_footprints,centroid_locations,adjusted_footprints_projections,centroid_projections,adjusted_FOV,microns_per_pixel,reference_session_index,alignment_type,sufficient_correlation_centroids,sufficient_correlation_footprints,use_parallel_processing,maximal_rotation);%
 elseif strcmp(alignment_type,'Non-rigid')
     [spatial_footprints_corrected,centroid_locations_corrected,footprints_projections_corrected,centroid_projections_corrected,maximal_cross_correlation,alignment_translations,overlapping_FOV,displacement_fields]=...
         align_images(adjusted_spatial_footprints,centroid_locations,adjusted_footprints_projections,centroid_projections,adjusted_FOV,microns_per_pixel,reference_session_index,alignment_type,sufficient_correlation_centroids,sufficient_correlation_footprints,use_parallel_processing,transformation_smoothness);
@@ -731,21 +736,6 @@ end
 axes(handles.axes1);
 plot_RGB_overlay(footprints_projections_corrected,RGB_indexes,overlapping_FOV)
 
-% saving the results into the data struct for the GUI
-data_struct.reference_session_index=reference_session_index;
-data_struct.alignment_type=alignment_type;
-data_struct.centroid_locations=centroid_locations;
-data_struct.spatial_footprints_corrected=spatial_footprints_corrected;
-data_struct.centroid_locations_corrected=centroid_locations_corrected;
-data_struct.adjusted_footprints_projections=adjusted_footprints_projections;
-data_struct.footprints_projections_corrected=footprints_projections_corrected;
-data_struct.adjusted_x_size=adjusted_x_size;
-data_struct.adjusted_y_size=adjusted_y_size;
-data_struct.overlapping_FOV=overlapping_FOV;
-data_struct.maximal_cross_correlation=maximal_cross_correlation;
-data_struct.alignment_translations=alignment_translations;
-data_struct.adjustment_zero_padding=adjustment_zero_padding;
-
 % saving the results into the aligned data structure:
 aligned_data_struct.reference_session_index=reference_session_index;
 aligned_data_struct.alignment_type=alignment_type;
@@ -761,12 +751,32 @@ aligned_data_struct.maximal_cross_correlation=maximal_cross_correlation;
 aligned_data_struct.alignment_translations=alignment_translations;
 aligned_data_struct.adjustment_zero_padding=adjustment_zero_padding;
 
-handles.data_struct=data_struct;
 disp('Saving the aligned data structure')
 save(fullfile(results_directory,'aligned_data_struct.mat'),'aligned_data_struct','-v7.3')
+
+% saving the results into the data struct for the GUI
+data_struct.spatial_footprints = aligned_data_struct.spatial_footprints; %sss
+clear aligned_data_struct %sss
+
+data_struct.reference_session_index=reference_session_index;
+data_struct.alignment_type=alignment_type;
+data_struct.centroid_locations=centroid_locations;
+data_struct.spatial_footprints_corrected=spatial_footprints_corrected;
+data_struct.centroid_locations_corrected=centroid_locations_corrected;
+data_struct.adjusted_footprints_projections=adjusted_footprints_projections;
+data_struct.footprints_projections_corrected=footprints_projections_corrected;
+data_struct.adjusted_x_size=adjusted_x_size;
+data_struct.adjusted_y_size=adjusted_y_size;
+data_struct.overlapping_FOV=overlapping_FOV;
+data_struct.maximal_cross_correlation=maximal_cross_correlation;
+data_struct.alignment_translations=alignment_translations;
+data_struct.adjustment_zero_padding=adjustment_zero_padding;
+
+handles.data_struct=data_struct;
+
 guidata(hObject,handles)
 if use_parallel_processing
-    delete(gcp);
+    try;    delete(gcp); end % sss
 end
 disp('Done')
 msgbox('Finished aligning sessions')
